@@ -1,0 +1,74 @@
+# AleWoo (Lvl 100 Enterprise) 🚀🤴
+
+> **Professional WooCommerce & Alegra SAP/ERP Integration for Colombia (DIAN Compliant).**
+
+---
+
+## 🇪🇸 Español
+
+### Descripción
+
+Esta es una solución integral de nivel corporativo para conectar WooCommerce con **Alegra**. Diseñada específicamente para el mercado colombiano, automatiza el ciclo completo de facturación electrónica, tesorería e inventario sin depender de herramientas de terceros ni pagos mensuales adicionales.
+
+### ✨ Características Principales
+
+- **DIAN Compliant**: Validación de NIT, cálculo de Dígito de Verificación (DV) y mapeo geográfico DANE.
+- **Automatización de Tesorería**: Generación automática de Recibos de Caja (Payments) vinculados a las facturas al detectar pagos en Woo.
+- **Gestión Analítica**: Atribución automática de ventas a Vendedores y segmentación por Centros de Costo.
+- **Notas de Crédito Automáticas**: Reembolsos parciales o totales procesados desde WooCommerce y creados como borradores en Alegra para revisión final.
+- **Inventario Inteligente**: Sincronización en tiempo real mediante Webhooks securizados por token de 32 caracteres.
+- **Sincronización 1 a 1**: Botones de sincronización manual en la lista de productos y dentro de cada pedido.
+- **Dashboard de Diagnóstico**: Monitor de salud del sistema y visor de logs en tiempo real.
+
+### 🛠️ Instalación y Configuración
+
+1. Sube la carpeta del plugin a `/wp-content/plugins/`.
+2. Activa el plugin desde el panel de WordPress.
+3. Ve a **WooCommerce > Alegra Pro**.
+4. En la pestaña **Conexión**, ingresa tu correo y Token de API de Alegra.
+5. Selecciona el **Banco Global** para los registros de pagos.
+6. En la pestaña **Diagnóstico**, copia la **URL Segura de Webhook** y pégala en tu panel de Alegra (Configuración > Webhooks).
+
+---
+
+## 🇺🇸 English
+
+### Description
+
+A high-level corporate solution to seamlessly connect WooCommerce with **Alegra**. Specifically engineered for the Colombian market, it automates the entire cycle of electronic invoicing, treasury, and inventory management without relying on third-party tools or external monthly fees.
+
+### ✨ Key Features
+
+- **DIAN Compliant**: NIT validation, Verification Digit (DV) calculation, and DANE geographic mapping.
+- **Treasury Automation**: Automatic generation of Cash Receipts (Payments) linked to invoices upon detecting payments in Woo.
+- **Analytical Management**: Automatic sale attribution to Sellers and segmentation by Cost Centers.
+- **Automatic Credit Notes**: Partial or total refunds processed from WooCommerce and created as drafts in Alegra for final review.
+- **Smart Inventory**: Real-time synchronization via Webhooks secured by a 32-character secret token.
+- **1-on-1 Sync**: Manual sync buttons available in product lists and individual order pages.
+- **Diagnostic Dashboard**: System health monitor and real-time log viewer.
+
+### 🛠️ Installation & Setup
+
+1. Upload the plugin folder to `/wp-content/plugins/`.
+2. Activate the plugin through the WordPress 'Plugins' menu.
+3. Navigate to **WooCommerce > Alegra Pro**.
+4. In the **Connection** tab, enter your Alegra email and API Token.
+5. Select the **Global Bank** for payment records.
+6. In the **Diagnostic** tab, copy the **Secure Webhook URL** and paste it into your Alegra panel (Settings > Webhooks).
+
+---
+
+## 🔒 Security
+
+Developed under premium OOP patterns, the plugin includes:
+
+- **Nonce Validation**: All AJAX actions are secured against CSRF attacks.
+- **Webhook Token**: Exclusive security key for inventory updates.
+- **Access Control**: Administrative functions restricted to users with `manage_options` capability.
+
+## 📄 License
+
+Custom Enterprise License.
+
+---
+**Developed with ❤️ by [Andrés Valencia Tobón](https://github.com/quijotevitruvio).**
