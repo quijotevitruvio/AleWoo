@@ -22,10 +22,10 @@ Esta es una solución integral de nivel corporativo para conectar WooCommerce co
 
 ### 🛠️ Cómo montar el camello (Instalación)
 
-1. Sube la carpeta del plugin a `/wp-content/plugins/`.
-2. Activa el plugin desde el panel de WordPress.
-3. Ve a **WooCommerce > Alegra Pro**.
-4. En la pestaña **El Enlace**, ingresa tu correo y Token de API de Alegra.
+1. Meta la carpetica del plugin en `/wp-content/plugins/`.
+2. Prenda esa vuelta (Activa el plugin) desde el panel de WordPress.
+3. Váyase para **WooCommerce > AleWoo**.
+4. En la pestaña **El Enlace**, ingrese su correo y el Token de API de Alegra.
 5. Selecciona el **Banco Global** para que los pagos queden melos.
 6. En la pestaña **¿Cómo va la vuelta?**, copia la **URL Segura de Webhook** y pégala en tu panel de Alegra (Configuración > Webhooks).
 
@@ -58,15 +58,15 @@ A high-level corporate solution to seamlessly connect WooCommerce with **Alegra*
 
 ---
 
-## 🔒 Security
+## 🔒 Blindaje Total (Seguridad)
 
-Developed under premium OOP patterns, the plugin includes:
+Desarrollado con los patrones más tesos de OOP, esta vuelta incluye:
 
-- **Nonce Validation**: All AJAX actions are secured against CSRF attacks.
-- **Webhook Token**: Exclusive security key for inventory updates.
-- **Access Control**: Administrative functions restricted to users with `manage_options` capability.
+- **Validación de Nonces**: Para que nadie se meta donde no debe en las acciones de AJAX.
+- **Token del Webhook**: Una llave secreta solo para que Alegra te actualice el inventario.
+- **Control de Acceso**: Solo los duros (`manage_options`) pueden moverle a los ajustes.
 
-## 📄 License
+## 📄 Los Permisos (Licencia)
 
 Custom Enterprise License.
 
