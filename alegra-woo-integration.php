@@ -126,10 +126,10 @@ class Alegra_Woo_Pro {
             <p class="description">Gestión avanzada de facturación e inventario DIAN.</p>
             
             <div class="alegra-tabs">
-                <div class="alegra-tab active" data-target="tab-conexion">🔌 Conexión</div>
-                <div class="alegra-tab" data-target="tab-config">⚙️ Configuración</div>
-                <div class="alegra-tab" data-target="tab-mapeo">🗺️ Mapeo</div>
-                <div class="alegra-tab" data-target="tab-diagnostico">🔍 Diagnóstico</div>
+                <a href="#tab-conexion" class="alegra-nav-item active" data-tab="tab-conexion">🔗 El Enlace</a>
+                <a href="#tab-configuracion" class="alegra-nav-item" data-tab="tab-configuracion">⚙️ Ajustes</a>
+                <a href="#tab-mapeo" class="alegra-nav-item" data-tab="tab-mapeo">🔄 Cruces de Data</a>
+                <a href="#tab-diagnostico" class="alegra-nav-item" data-tab="tab-diagnostico">📡 ¿Cómo va la vuelta?</a>
             </div>
 
             <form method="post" action="options.php">
@@ -138,11 +138,11 @@ class Alegra_Woo_Pro {
                 $options = get_option( $this->option_name );
                 ?>
 
-                <!-- TAB CONEXION -->
+                <!-- TAB CONEXION (EL ENLACE) -->
                 <div id="tab-conexion" class="alegra-tab-content active">
                     <div class="alegra-section">
-                        <h2>Credenciales de API</h2>
-                        <p class="description">Configura el acceso a tu cuenta de Alegra.</p>
+                        <h2>Conecte esa vuelta (API)</h2>
+                        <p class="description">Aquí es donde enganchamos WooCommerce con Alegra para que todo fluya.</p>
                         <table class="form-table">
                             <tr>
                                 <th>Email de Alegra</th>
@@ -322,20 +322,20 @@ class Alegra_Woo_Pro {
                     </div>
                 </div>
 
-                <!-- TAB DIAGNOSTICO -->
+                <!-- TAB DIAGNOSTICO (¿CÓMO VA LA VUELTA?) -->
                 <div id="tab-diagnostico" class="alegra-tab-content">
                     <div class="alegra-section">
-                        <h2>Diagnóstico de Salud del Sistema</h2>
+                        <h2>¿Cómo va la vuelta? (Salud del Sistema)</h2>
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
                             <div style="background: #f0fff4; padding: 15px; border-radius: 8px; border: 1px solid #c6f6d5; text-align: center;">
                                 <div style="font-size: 24px;">📡</div>
                                 <div style="font-weight: bold; color: #22543d;">API Status</div>
-                                <div style="font-size: 11px; color: #276749;">Conectado</div>
+                                <div style="font-size: 11px; color: #276749;">¡Melo! (Conectado)</div>
                             </div>
                             <div style="background: <?php echo !empty($options['bank_account_id']) ? '#f0fff4' : '#fff5f5'; ?>; padding: 15px; border-radius: 8px; border: 1px solid <?php echo !empty($options['bank_account_id']) ? '#c6f6d5' : '#feb2b2'; ?>; text-align: center;">
                                 <div style="font-size: 24px;">🏦</div>
                                 <div style="font-weight: bold; color: <?php echo !empty($options['bank_account_id']) ? '#22543d' : '#822727'; ?>;">Bancos</div>
-                                <div style="font-size: 11px; color: <?php echo !empty($options['bank_account_id']) ? '#276749' : '#9b2c2c'; ?>;"><?php echo !empty($options['bank_account_id']) ? 'Configurado' : 'Pendiente'; ?></div>
+                                <div style="font-size: 11px; color: <?php echo !empty($options['bank_account_id']) ? '#276749' : '#9b2c2c'; ?>;"><?php echo !empty($options['bank_account_id']) ? '¡Pa\' esa!' : 'Falta configurar'; ?></div>
                             </div>
                             <div style="background: #ebf8ff; padding: 15px; border-radius: 8px; border: 1px solid #bee3f8; text-align: center;">
                                 <div style="font-size: 24px;">🛠️</div>

@@ -6,28 +6,28 @@
 
 ## 🇪🇸 Español
 
-### Descripción
+### ¿De qué va esto? (Descripción)
 
-Esta es una solución integral de nivel corporativo para conectar WooCommerce con **Alegra**. Diseñada específicamente para el mercado colombiano, automatiza el ciclo completo de facturación electrónica, tesorería e inventario sin depender de herramientas de terceros ni pagos mensuales adicionales.
+Esta es una solución integral de nivel corporativo para conectar WooCommerce con **Alegra**. Diseñada específicamente para el mercado colombiano, automatiza todo el chicharrón de la facturación electrónica, tesorería e inventario sin depender de herramientas de terceros ni pagos mensuales adicionales.
 
-### ✨ Características Principales
+### ✨ Lo más teso (Características)
 
 - **DIAN Compliant**: Validación de NIT, cálculo de Dígito de Verificación (DV) y mapeo geográfico DANE.
 - **Automatización de Tesorería**: Generación automática de Recibos de Caja (Payments) vinculados a las facturas al detectar pagos en Woo.
 - **Gestión Analítica**: Atribución automática de ventas a Vendedores y segmentación por Centros de Costo.
 - **Notas de Crédito Automáticas**: Reembolsos parciales o totales procesados desde WooCommerce y creados como borradores en Alegra para revisión final.
 - **Inventario Inteligente**: Sincronización en tiempo real mediante Webhooks securizados por token de 32 caracteres.
-- **Sincronización 1 a 1**: Botones de sincronización manual en la lista de productos y dentro de cada pedido.
-- **Dashboard de Diagnóstico**: Monitor de salud del sistema y visor de logs en tiempo real.
+- **Sincronización 1 a 1**: Botones para sincronizar el chicharrón manualmente en la lista de productos y dentro de cada pedido.
+- **¿Cómo va la vuelta?**: Monitor de salud del sistema y visor de logs en tiempo real para que todo esté ¡Melo!
 
-### 🛠️ Instalación y Configuración
+### 🛠️ Cómo montar el camello (Instalación)
 
 1. Sube la carpeta del plugin a `/wp-content/plugins/`.
 2. Activa el plugin desde el panel de WordPress.
 3. Ve a **WooCommerce > Alegra Pro**.
-4. En la pestaña **Conexión**, ingresa tu correo y Token de API de Alegra.
-5. Selecciona el **Banco Global** para los registros de pagos.
-6. En la pestaña **Diagnóstico**, copia la **URL Segura de Webhook** y pégala en tu panel de Alegra (Configuración > Webhooks).
+4. En la pestaña **El Enlace**, ingresa tu correo y Token de API de Alegra.
+5. Selecciona el **Banco Global** para que los pagos queden melos.
+6. En la pestaña **¿Cómo va la vuelta?**, copia la **URL Segura de Webhook** y pégala en tu panel de Alegra (Configuración > Webhooks).
 
 ---
 
