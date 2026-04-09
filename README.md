@@ -8,9 +8,14 @@
 
 ### ¿De qué va esto? (Descripción)
 
-Esta es una solución integral de nivel corporativo para conectar WooCommerce con **Alegra**. Diseñada específicamente para el mercado colombiano, automatiza todo el chicharrón de la facturación electrónica, tesorería e inventario sin depender de herramientas de terceros ni pagos mensuales adicionales.
+Esta es una solución integral de nivel corporativo para conectar WooCommerce con la **API oficial de Alegra**. Diseñada específicamente para el mercado colombiano, automatiza todo el chicharrón de la facturación electrónica, tesorería e inventario sin depender de herramientas de terceros ni pagos mensuales adicionales. **Este plugin se pega directamente a los servicios de Alegra para garantizar que su contabilidad esté siempre al día.**
 
-### ✨ Lo más teso (Características)
+### 📦 Cómo descargar el Plugin (ZIP)
+
+Para que lo podás montar en tu WordPress de una, hacé esto:
+1. Dale clic al botón verde que dice **"Code"** arriba a la derecha.
+2. Elegí la opción **"Download ZIP"**.
+3. ¡Listo! Ya tenés el archivo para subirlo a tu sitio.
 
 - **DIAN Compliant**: Validación de NIT, cálculo de Dígito de Verificación (DV) y mapeo geográfico DANE.
 - **Automatización de Tesorería**: Generación automática de Recibos de Caja (Payments) vinculados a las facturas al detectar pagos en Woo.
@@ -60,7 +65,7 @@ A high-level corporate solution to seamlessly connect WooCommerce with **Alegra*
 
 ## 🔒 Blindaje Total (Seguridad)
 
-Desarrollado con los patrones más tesos de OOP, esta vuelta incluye:
+Este plugin es una "bestia" de integración que se comunica vía **API REST** con Alegra. Desarrollado con los patrones más tesos de OOP, esta vuelta incluye:
 
 - **Validación de Nonces**: Para que nadie se meta donde no debe en las acciones de AJAX.
 - **Token del Webhook**: Una llave secreta solo para que Alegra te actualice el inventario.
