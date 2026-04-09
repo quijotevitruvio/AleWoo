@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: AleWoo (Lvl 100 Enterprise)
+ * Plugin Name: AleWoo: Facturación Melos para WooCommerce 🚀🤴
  * Description: Integración avanzada para Facturación Electrónica DIAN, Inventario Multibodega y Notas de Crédito Automáticas.
  * Version: 6.0.4
  * Author: Andrés Valencia Tobón
