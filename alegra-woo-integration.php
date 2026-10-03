@@ -2,7 +2,7 @@
 /**
  * Plugin Name: AleWoo: Facturación Melos para WooCommerce 🚀🤴
  * Description: Integración avanzada para Facturación Electrónica DIAN, Inventario Multibodega y Notas de Crédito Automáticas.
- * Version: 6.0.4
+ * Version: 6.1.0
  * Author: Andrés Valencia Tobón
  * Author URI: https://github.com/quijotevitruvio
  * Text Domain: alegra-woo-pro
@@ -39,8 +39,13 @@ class Alegra_Woo_Pro {
         add_action( 'admin_init', array( $this, 'register_settings' ) );
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_styles' ) );
         
-        // Hooks de Facturación y Reembolsos
-        add_action( 'woocommerce_order_status_completed', array( $this, 'process_alegra_invoice' ), 10, 1 );
+        // Facturación: por defecto SOLO manual (botón "Emitir factura electrónica"
+        // dentro de cada pedido), porque NO todos los pedidos llevan factura. La
+        // facturación AUTOMÁTICA al completar queda como opción, apagada por defecto.
+        if ( ! empty( $options['auto_invoice_on_complete'] ) ) {
+            add_action( 'woocommerce_order_status_completed', array( $this, 'process_alegra_invoice' ), 10, 1 );
+        }
+        // Nota de crédito al reembolsar: solo actúa si el pedido YA tiene factura Alegra.
         add_action( 'woocommerce_order_refunded', array( $this, 'process_alegra_partial_refund' ), 10, 2 );
 
         // Metabox y Acciones Manuales
@@ -49,6 +54,11 @@ class Alegra_Woo_Pro {
         add_action( 'wp_ajax_alegra_manual_sync', array( $this, 'handle_manual_sync' ) );
         add_action( 'wp_ajax_alegra_sync_single_product', array( $this, 'ajax_sync_single_product' ) );
         add_action( 'wp_ajax_alegra_test_connection', array( $this, 'ajax_test_connection' ) );
+
+        // Botón rápido "Emitir factura" en la columna Acciones de la lista de pedidos.
+        add_filter( 'woocommerce_admin_order_actions', array( $this, 'add_list_invoice_action' ), 10, 2 );
+        add_action( 'admin_init', array( $this, 'handle_list_invoice_action' ) );
+        add_action( 'admin_head', array( $this, 'list_invoice_action_css' ) );
         
         // Acciones en la lista de productos
         add_filter( 'post_row_actions', array( $this, 'add_product_list_sync_button' ), 10, 2 );
@@ -87,6 +97,12 @@ class Alegra_Woo_Pro {
      * Escanea la base de datos en busca de llaves meta que empiecen por billing_ o _billing_
      */
     private function get_available_billing_keys() {
+        // Cache 12h: esta consulta escanea postmeta + usermeta (pesada) y solo se
+        // usa para poblar un <select> en Ajustes; no necesita ser en vivo.
+        $cache = get_transient( 'alegra_billing_keys' );
+        if ( is_array( $cache ) ) {
+            return $cache;
+        }
         global $wpdb;
         $keys = $wpdb->get_col( "
             (SELECT DISTINCT meta_key FROM {$wpdb->postmeta} WHERE meta_key LIKE '%billing%')
@@ -94,12 +110,14 @@ class Alegra_Woo_Pro {
             (SELECT DISTINCT meta_key FROM {$wpdb->usermeta} WHERE meta_key LIKE '%billing%')
             ORDER BY meta_key ASC
         " );
-        
+
         $cleaned_keys = array();
         foreach ( $keys as $k ) {
             $cleaned_keys[] = ltrim( $k, '_' ); // Mostrar versión sin guión bajo para legibilidad
         }
-        return array_unique( $cleaned_keys );
+        $cleaned_keys = array_unique( $cleaned_keys );
+        set_transient( 'alegra_billing_keys', $cleaned_keys, 12 * HOUR_IN_SECONDS );
+        return $cleaned_keys;
     }
 
     public function settings_page() {
@@ -109,9 +127,9 @@ class Alegra_Woo_Pro {
             #alegra-pro-wrap { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; margin: 20px auto; max-width: 900px; padding: 30px; background: #fff; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border: 1px solid #edf2f7; }
             .alegra-badge { display: inline-block; padding: 4px 12px; border-radius: 50px; background: #e6fffa; color: #2c7a7b; font-weight: 700; font-size: 11px; margin-bottom: 10px; }
             .alegra-tabs { display: flex; gap: 10px; border-bottom: 2px solid #edf2f7; margin-bottom: 25px; }
-            .alegra-tab { padding: 12px 20px; cursor: pointer; font-weight: 600; color: #a0aec0; border-bottom: 2px solid transparent; transition: 0.3s; }
-            .alegra-tab:hover { color: #3182ce; }
-            .alegra-tab.active { color: #3182ce; border-bottom-color: #3182ce; }
+            .alegra-nav-item { padding: 12px 20px; cursor: pointer; font-weight: 600; color: #a0aec0; border-bottom: 2px solid transparent; transition: 0.3s; text-decoration: none; }
+            .alegra-nav-item:hover { color: #3182ce; }
+            .alegra-nav-item.active { color: #3182ce; border-bottom-color: #3182ce; }
             .alegra-tab-content { display: none; animation: fadeIn 0.4s; }
             .alegra-tab-content.active { display: block; }
             @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -174,7 +192,7 @@ class Alegra_Woo_Pro {
                 </div>
 
                 <!-- TAB CONFIGURACION -->
-                <div id="tab-config" class="alegra-tab-content">
+                <div id="tab-configuracion" class="alegra-tab-content">
                     <div class="alegra-section">
                         <h2>Configuración Fiscal (DIAN)</h2>
                         <p class="description">Ajustes avanzados para la emisión de facturas.</p>
@@ -368,11 +386,11 @@ class Alegra_Woo_Pro {
         <script>
             jQuery(document).ready(function($){
                 // Lógica de Pestañas Mejorada
-                $('.alegra-tab').on('click', function(e) {
+                $('.alegra-nav-item').on('click', function(e) {
                     e.preventDefault();
-                    var target = $(this).attr('data-target');
-                    
-                    $('.alegra-tab').removeClass('active');
+                    var target = $(this).attr('data-tab');
+
+                    $('.alegra-nav-item').removeClass('active');
                     $(this).addClass('active');
 
                     $('.alegra-tab-content').hide().removeClass('active');
@@ -412,6 +430,13 @@ class Alegra_Woo_Pro {
     public function process_alegra_invoice( $order_id ) {
         $order = wc_get_order( $order_id );
         if ( ! $order ) return;
+
+        // Idempotencia: si el pedido ya tiene factura en Alegra, NO volver a emitir
+        // (evita facturas DIAN duplicadas si el pedido se completa más de una vez).
+        if ( $order->get_meta( '_alegra_invoice_id', true ) ) {
+            $this->add_sync_log( "↩️ Pedido #{$order_id} ya tiene factura Alegra; se omite (idempotencia)." );
+            return;
+        }
 
         $options = get_option( $this->option_name );
         if ( empty($options['email']) || empty($options['token']) ) {
@@ -742,17 +767,23 @@ class Alegra_Woo_Pro {
      * Agrega un metabox de Alegra Pro en el panel lateral de pedidos.
      */
     public function add_alegra_metabox() {
-        add_meta_box( 'alegra_sync_box', 'Alegra Pro: Acciones', array( $this, 'render_alegra_metabox' ), 'shop_order', 'side', 'high' );
+        // Compatible con HPOS (pantalla wc-orders) y con el modo clásico (shop_order).
+        $screen = function_exists( 'wc_get_page_screen_id' ) ? wc_get_page_screen_id( 'shop-order' ) : 'shop_order';
+        add_meta_box( 'alegra_sync_box', 'Alegra: Factura electrónica', array( $this, 'render_alegra_metabox' ), $screen, 'side', 'high' );
     }
 
-    public function render_alegra_metabox( $post ) {
-        $order = wc_get_order( $post->ID );
+    public function render_alegra_metabox( $post_or_order ) {
+        // HPOS pasa el WC_Order; el modo clásico pasa el WP_Post.
+        $order = ( $post_or_order instanceof WP_Post ) ? wc_get_order( $post_or_order->ID ) : $post_or_order;
+        if ( ! $order ) { echo '<p>Pedido no disponible.</p>'; return; }
+        $order_id   = $order->get_id();
         $invoice_id = $order->get_meta( '_alegra_invoice_id', true );
         ?>
         <div style="padding: 10px 0;">
-            <p><strong>Estado:</strong> <?php echo $invoice_id ? '<span style="color: green;">✅ Sincronizado</span> (ID: '.$invoice_id.')' : '<span style="color: orange;">⏳ Pendiente</span>'; ?></p>
-            <button type="button" id="btn-alegra-sync" class="button button-primary" data-order="<?php echo $post->ID; ?>" <?php echo $invoice_id ? 'disabled' : ''; ?>>
-                <?php echo $invoice_id ? 'Factura Emitida' : 'Sincronizar con Alegra'; ?>
+            <p style="margin-top:0;color:#555;">Factura electrónica DIAN vía Alegra. <strong>Solo se emite al presionar el botón</strong> (no se factura solo).</p>
+            <p><strong>Estado:</strong> <?php echo $invoice_id ? '<span style="color: green;">✅ Facturado</span> (ID: '.esc_html($invoice_id).')' : '<span style="color: orange;">⏳ Sin factura</span>'; ?></p>
+            <button type="button" id="btn-alegra-sync" class="button button-primary" data-order="<?php echo esc_attr( $order_id ); ?>" <?php echo $invoice_id ? 'disabled' : ''; ?>>
+                <?php echo $invoice_id ? '✅ Factura emitida' : '📄 Emitir factura electrónica'; ?>
             </button>
             <div id="alegra-msg" style="margin-top: 10px;"></div>
         </div>
@@ -781,38 +812,61 @@ class Alegra_Woo_Pro {
 
     public function handle_manual_sync() {
         check_ajax_referer( 'alegra_sync', 'nonce' );
+        if ( ! current_user_can( 'edit_shop_orders' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => 'Acceso no autorizado.' ) );
+        }
         $order_id = intval( $_POST['order_id'] );
         $this->process_alegra_invoice( $order_id );
         wp_send_json_success( array( 'message' => '<p style="color: green;">Sincronización finalizada. Revisa las notas del pedido.</p>' ) );
     }
 
     /**
-     * Procesar Reembolso (Nota de Crédito)
+     * Añade un botón "Emitir factura electrónica" en la columna Acciones de la
+     * lista de pedidos (solo si el pedido aún NO tiene factura en Alegra).
      */
-    public function process_alegra_refund( $order_id ) {
-        $order = wc_get_order( $order_id );
-        $invoice_id = $order->get_meta( '_alegra_invoice_id', true );
-        if ( ! $invoice_id ) return;
-
-        $options = get_option( $this->option_name );
-        $auth = base64_encode( $options['email'] . ':' . $options['token'] );
-
-        $payload = array(
-            'date'              => date('Y-m-d'),
-            'invoiceId'         => $invoice_id,
-            'reason'            => 'Anulación por pedido reembolsado en WooCommerce',
-            'items'             => array(), // Alegra gestiona la devolución total si se envía vacío o bajo ciertos esquemas
-            'stamp'             => array( 'generateStamp' => true )
+    public function add_list_invoice_action( $actions, $order ) {
+        if ( ! current_user_can( 'edit_shop_orders' ) ) {
+            return $actions;
+        }
+        if ( $order->get_meta( '_alegra_invoice_id', true ) ) {
+            return $actions; // Ya facturado: no mostrar el botón.
+        }
+        $url = wp_nonce_url(
+            admin_url( 'admin.php?action=alegra_list_invoice&order_id=' . $order->get_id() ),
+            'alegra_list_invoice_' . $order->get_id()
         );
-
-        // Intentar crear Nota de Crédito
-        wp_remote_post( 'https://api.alegra.com/api/v1/credit-notes', array(
-            'headers'   => array( 'Authorization' => 'Basic ' . $auth, 'Content-Type' => 'application/json' ),
-            'body'      => wp_json_encode( $payload )
-        ));
-
-        $order->add_order_note( 'ℹ️ Se ha solicitado la creación de una Nota de Crédito en Alegra por reembolso.' );
+        $actions['alegra_invoice'] = array(
+            'url'    => $url,
+            'name'   => __( 'Emitir factura electrónica (Alegra)', 'alegra-woo-pro' ),
+            'action' => 'alegra_invoice',
+        );
+        return $actions;
     }
+
+    /** Procesa el clic del botón de la lista (GET con nonce) y redirige de vuelta. */
+    public function handle_list_invoice_action() {
+        if ( empty( $_GET['action'] ) || 'alegra_list_invoice' !== $_GET['action'] ) {
+            return;
+        }
+        $order_id = isset( $_GET['order_id'] ) ? absint( $_GET['order_id'] ) : 0;
+        if ( ! $order_id || ! current_user_can( 'edit_shop_orders' ) ) {
+            return;
+        }
+        check_admin_referer( 'alegra_list_invoice_' . $order_id );
+        $this->process_alegra_invoice( $order_id );
+        $back = wp_get_referer() ? wp_get_referer() : admin_url( 'admin.php?page=wc-orders' );
+        wp_safe_redirect( add_query_arg( 'alegra_done', '1', $back ) );
+        exit;
+    }
+
+    /** Ícono del botón de la lista de pedidos. */
+    public function list_invoice_action_css() {
+        echo '<style>.wc-action-button-alegra_invoice::after{font-family:dashicons;content:"\f497";}</style>';
+    }
+
+    // [Eliminado en v6.1.0] process_alegra_refund(): era código muerto (no estaba
+    // enganchado a ningún hook). El reembolso real lo maneja
+    // process_alegra_partial_refund(), conectado a 'woocommerce_order_refunded'.
 
     /**
      * REST API para Sincronización de Stock
@@ -832,6 +886,14 @@ class Alegra_Woo_Pro {
     }
 
     public function update_stock_from_alegra( $request ) {
+        // SEGURIDAD: la escritura de stock Alegra→WooCommerce viene APAGADA por
+        // defecto. Actívala solo cuando confirmes que Alegra tiene el inventario
+        // correcto y mapeado por SKU (de lo contrario puede poner stock en cero).
+        $options = get_option( $this->option_name );
+        if ( empty( $options['enable_stock_webhook'] ) ) {
+            return new WP_REST_Response( array( 'success' => false, 'msg' => 'Sincronización de stock entrante desactivada en ajustes.' ), 200 );
+        }
+
         $data = $request->get_json_params();
         if ( ! isset($data['item']['reference']) || ! isset($data['item']['inventory']['stock']) ) {
             return new WP_Error( 'invalid_data', 'Datos incompletos', array( 'status' => 400 ) );
@@ -886,7 +948,8 @@ class Alegra_Woo_Pro {
                 'Authorization' => 'Basic ' . $auth,
                 'Content-Type'  => 'application/json'
             ),
-            'body' => wp_json_encode( $payload )
+            'body'    => wp_json_encode( $payload ),
+            'timeout' => 45
         ));
 
         if ( is_wp_error( $response ) ) {
@@ -979,7 +1042,8 @@ class Alegra_Woo_Pro {
                 'Authorization' => 'Basic ' . $auth,
                 'Content-Type'  => 'application/json'
             ),
-            'body' => wp_json_encode( $payload )
+            'body'    => wp_json_encode( $payload ),
+            'timeout' => 45
         ));
 
         if ( is_wp_error( $response ) ) {
@@ -1036,7 +1100,8 @@ class Alegra_Woo_Pro {
                 'Authorization' => 'Basic ' . $auth,
                 'Content-Type'  => 'application/json'
             ),
-            'body' => json_encode( $payload )
+            'body'    => wp_json_encode( $payload ),
+            'timeout' => 45
         ));
 
         if ( is_wp_error( $response ) ) return $response;
@@ -1249,6 +1314,14 @@ class Alegra_Woo_Pro {
             'type'           => array( 'client' ),
             'fiscalResponsibilities' => array( array( 'code' => $fiscal_responsibility ) )
         );
+
+        // Pedido solo de ebooks: puede venir sin teléfono ni dirección. No se envían campos vacíos.
+        if ( '' === trim( (string) $client_payload['phonePrimary'] ) ) {
+            unset( $client_payload['phonePrimary'] );
+        }
+        if ( '' === trim( (string) $client_payload['address']['address'] . $client_payload['address']['city'] . $client_payload['address']['department'] ) ) {
+            unset( $client_payload['address'] );
+        }
 
         $response = wp_remote_post( 'https://api.alegra.com/api/v1/contacts', array(
             'method'  => 'POST',
